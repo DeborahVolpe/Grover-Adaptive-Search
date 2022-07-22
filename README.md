@@ -1,5 +1,6 @@
 # Grover Adaptive Search
 
+Engineering Grover Adaptive Search: Exploring the Degrees of Freedom for Efficient QUBO Solving
 
 
 ## Getting started
