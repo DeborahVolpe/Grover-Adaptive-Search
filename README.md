@@ -3,6 +3,7 @@
 Engineering Grover Adaptive Search: Exploring the Degrees of Freedom for Efficient QUBO Solving
 L. Giuffrida, D. Volpe, G.A. Cirillo, M. Zamboni and G. Turvani
 
+Prova
 
 ## Getting started
 
