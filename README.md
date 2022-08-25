@@ -4,6 +4,8 @@ Engineering Grover Adaptive Search: Exploring the Degrees of Freedom for Efficie
 
 L. Giuffrida, D. Volpe, G.A. Cirillo, M. Zamboni and G. Turvani
 
+published in 30 September 2022 on IEEE Journal on Emerging and Selected Topics in Circuits and Systems
+
 
 ## Getting started
 
