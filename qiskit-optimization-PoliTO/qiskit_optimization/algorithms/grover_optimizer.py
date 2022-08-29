@@ -340,8 +340,38 @@ class GroverOptimizer(OptimizationAlgorithm):
         )
     
    
-    """ Solver modified by PoliTo"""
-    def solve_PoliTo_adaptT(self, problem: QuadraticProgram, adaptTlin, adaptTlog, tmin_par, vel_par, restore = True, update = True, random = True, pattern = False, linear = False, updateonimprove = False, satM = False, adaptT = False) -> OptimizationResult:
+    """ Solver modified by PoliTo """
+    
+    """ 
+        For using the solver in the article combination:
+        
+        - Random linear Sat: adaptTlin=True, adaptTlog=False, restore=True, update=True, random=True, pattern=False, linear=False, satM=True
+        - Random logarithmic Sat: adaptTlin=False, adaptTlog=True, restore=True, update=True, random=True, pattern=False, linear=False, satM=True
+        - Random adaptive Sat: adaptTlin=False, adaptTlog=False, restore=True, update=True, random=True, pattern=False, linear=False, satM=True, adaptT=True
+        
+        - Random fixed no Sat: adaptTlin=False, adaptTlog=False, restore=True, update=True, random=True, pattern=False, linear=False
+        - Random linear no Sat: adaptTlin=True, adaptTlog=False, restore=True, update=True, random=True, pattern=False, linear=False
+        - Random logarithmic no Sat: adaptTlin=False, adaptTlog=True, restore=True, update=True, random=True, pattern=False, linear=False
+        - Random adaptive no Sat: adaptTlin=False, adaptTlog=False, restore=True, update=True, random=True, pattern=False, linear=False, adaptT=True
+        
+        - Linear fixed Sat: adaptTlin=False, adaptTlog=False, restore=True, update=True, random=False, pattern=False, linear=True, satM=True
+        - Linear linear Sat: adaptTlin=True, adaptTlog=False, restore=True, update=True, random=False, pattern=False, linear=True, satM=True
+        - Linear logarithmic Sat: adaptTlin=False, adaptTlog=True, restore=True, update=True, random=False, pattern=False, linear=True, satM=True
+        - Linear adaptive Sat: adaptTlin=False, adaptTlog=False, restore=True, update=True, random=False, pattern=False, linear=True, satM=True, adaptT=True
+        
+        - Linear fixed no Sat: adaptTlin=False, adaptTlog=False, restore=True, update=True, random=False, pattern=False, linear=True
+        - Linear linear no Sat: adaptTlin=True, adaptTlog=False, restore=True, update=True, random=False, pattern=False, linear=True
+        - Linear logarithmic no Sat: adaptTlin=False, adaptTlog=True, restore=True, update=True, random=False, pattern=False, linear=True
+        - Linear adaptive no Sat: adaptTlin=False, adaptTlog=False, restore=True, update=True, random=False, pattern=False, linear=True, adaptT=True
+        
+        - Pattern fixed no Sat: adaptTlin=False, adaptTlog=False, restore=False, update=True, random=False, pattern=True, linear=False
+        - Pattern linear no Sat: adaptTlin=True, adaptTlog=False, restore=False, update=True, random=False, pattern=True, linear=False
+        - Pattern logarithmic no Sat: adaptTlin=False, adaptTlog=True, restore=False, update=True, random=False, pattern=True, linear=False
+        - Pattern adaptive no Sat: adaptTlin=False, adaptTlog=False, restore=False, update=True, random=False, pattern=True, linear=False, adaptT=True
+        
+    """
+    
+    def solve_PoliTo_adaptT(self, problem: QuadraticProgram, vel_par, tmin_par = 2, highTpercentage = 0.80, lowTpercentage = 0.20, percentageIncreaseT = 1.2, percentageDecreaseT = 0.8, adaptTlin = False, adaptTlog = False, restore = True, update = True, random = True, pattern = False, linear = False, updateonimprove = False, satM = False, adaptT = False) -> OptimizationResult:
         """Tries to solves the given problem using the grover optimizer.
 
         Runs the optimizer to try to solve the optimization problem. If the problem cannot be,
@@ -356,6 +386,10 @@ class GroverOptimizer(OptimizationAlgorithm):
                 adaptT: flag which is equal to True if the adaptive stategy for managing the threshold for the stop condition               
                 tmin_par: minimum value for the threshold
                 vel_par: control parameter of the linear/logarithmic scaling slope
+                highTpercentage: percentage of the threshold that the number of positive sample must overcome for increasing it in the adaptive strategy
+                lowTpercentage: percentage of the threshold under which the number of consecutive positive sample must be for decrasing it in the adaptive strategy
+                percentageIncreaseT: percentege for increasing the threshold in the adaptive strategy
+                percentageDecreaseT: percentage for decreasing the threashold in the adaptive strategy
                 
             Flags for choosing the number of grover rotation management strategy:
                 restore: flag which is equal to True if the fixed/random/linear strategy initial condition is restored every time a negative value is sample
@@ -387,9 +421,9 @@ class GroverOptimizer(OptimizationAlgorithm):
             posCNT = 0
             negCNT = 0
             #number of consecutive positive sample to overcome at the beginning for increasing the threshold
-            highT = int(0.8 * self._n_iterations)
+            highT = int(highTpercentage * self._n_iterations)
             #number  under which it the consecutive positive sample must be at the beginning for reducing the threshold
-            lowT = int(0.2 * self._n_iterations)
+            lowT = int(lowTpercentage * self._n_iterations)
             
 
         if self.quantum_instance is None:
@@ -442,7 +476,7 @@ class GroverOptimizer(OptimizationAlgorithm):
             m = 0
             
         # for linear and logarithmic dynamic scaling of the threashold
-        if adaptTlin or adaptTlog:
+        if adaptTlin or adaptTlog or adaptT:
             # initialization of the maximum threshold
             tMax = self._n_iterations
             # initialization of the minimum threshold
@@ -516,18 +550,18 @@ class GroverOptimizer(OptimizationAlgorithm):
                     # Update of the threshold if necessary for the adaptive strategy
                     if adaptT:
                         if posCNT >= highT:
-                            self._n_iterations = int(1.2 * self._n_iterations)
+                            self._n_iterations = int(percentageIncreaseT * self._n_iterations)
                             #number of consecutive positive sample to overcome at the beginning for increasing the threshold
-                            highT = int(0.8 * self._n_iterations)
+                            highT = int(highTpercentage * self._n_iterations)
                             #number  under which it the consecutive positive sample must be at the beginning for reducing the threshold
-                            lowT = int(0.2 * self._n_iterations)
+                            lowT = int(lowTpercentage * self._n_iterations)
                         if posCNT <= lowT:
-                            nnit = int(0.8 * self._n_iterations)
+                            nnit = int(percentageDecreaseT * self._n_iterations)
                             self._n_iterations = nnit if nnit > tMin else tMin
                             #number of consecutive positive sample to overcome at the beginning for increasing the threshold
-                            highT = int(0.8 * self._n_iterations)
+                            highT = int(highTpercentage * self._n_iterations)
                             #number  under which it the consecutive positive sample must be at the beginning for reducing the threshold
-                            lowT = int(0.2 * self._n_iterations)
+                            lowT = int(lowTpercentage * self._n_iterations)
                         posCNT = 0
                         
                     # Update of the threshold for the linear strategy
