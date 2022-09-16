@@ -1,10 +1,9 @@
 # Grover Adaptive Search
 
-Engineering Grover Adaptive Search: Exploring the Degrees of Freedom for Efficient QUBO Solving
-
-L. Giuffrida, D. Volpe, G.A. Cirillo, M. Zamboni and G. Turvani
-
-published in 30 September 2022 on IEEE Journal on Emerging and Selected Topics in Circuits and Systems
+L. Giuffrida, D. Volpe, G. A. Cirillo, M. Zamboni and G. Turvani, 
+"Engineering Grover Adaptive Search: Exploring the Degrees of Freedom for Efficient QUBO Solving," 
+in IEEE Journal on Emerging and Selected Topics in Circuits and Systems, 2022 September 30,
+doi: 10.1109/JETCAS.2022.3202566.
 
 
 ## Getting started
